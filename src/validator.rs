@@ -11,15 +11,18 @@ pub async fn validate_jwt(aud: &str, token: &str) -> anyhow::Result<Value> {
     validation.set_required_spec_claims(&["aud", "iss", "exp"]);
 
     let key = KEY.lock().await;
-    let Some(key) = &*key else {
+    let Some(jwks_data) = &*key else {
         bail!("Decoding key is not available");
     };
-    let json = jsonwebtoken::decode::<Value>(token, key, &validation);
+    let Ok(decoding_key) = jwks_data.get_key() else {
+        bail!("Decoding key is expired");
+    };
+    let json = jsonwebtoken::decode::<Value>(token, decoding_key, &validation);
 
     return match json {
         Ok(data) => Ok(data.claims),
-        Err(e) => {
-            bail!("JWT validation failed: {:?}", e);
+        Err(_) => {
+            bail!("JWT validation failed");
         }
     };
 }

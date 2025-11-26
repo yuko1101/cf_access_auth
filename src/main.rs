@@ -46,12 +46,11 @@ async fn verify(aud: web::Path<String>, req: HttpRequest) -> HttpResponse {
         .and_then(|v| v.to_str().ok());
 
     let Some(jwt_assertion) = jwt_assertion else {
-        return HttpResponse::Unauthorized().finish();
+        return HttpResponse::Unauthorized().body("Missing Cf-Access-Jwt-Assertion header");
     };
 
-    return if let Ok(data) = validate_jwt(&aud, &jwt_assertion).await {
-        HttpResponse::Ok().json(data)
-    } else {
-        HttpResponse::Unauthorized().finish()
+    return match validate_jwt(&aud, &jwt_assertion).await {
+        Ok(data) => HttpResponse::Ok().json(data),
+        Err(e) => HttpResponse::Unauthorized().body(e.to_string()),
     };
 }
