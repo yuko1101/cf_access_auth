@@ -4,14 +4,25 @@ mod validator;
 use std::str::FromStr;
 
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, get, http::header::HeaderName, web};
+use clap::Parser;
 
 use crate::validator::validate_jwt;
 
+#[derive(Parser, Debug)]
+struct Args {
+    #[arg(short, long, default_value = "0.0.0.0")]
+    bind: String,
+    #[arg(short, long, default_value_t = 8080)]
+    port: u16,
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    let args = Args::parse();
+
     let key_rotation_handle = key_rotator::rotate_keys_periodically();
     let server = HttpServer::new(|| App::new().service(verify))
-        .bind(("127.0.0.1", 8080))?
+        .bind((args.bind, args.port))?
         .run();
 
     tokio::select! {
