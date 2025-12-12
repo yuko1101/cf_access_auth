@@ -31,6 +31,14 @@
             inherit pname src;
             version = (builtins.fromTOML (builtins.readFile "${src}/Cargo.toml")).package.version;
 
+            nativeBuildInputs = with pkgs; [
+              pkg-config
+            ];
+
+            buildInputs = with pkgs; [
+              openssl
+            ];
+
             cargoLock = {
               lockFile = "${src}/Cargo.lock";
             };
