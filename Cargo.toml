@@ -1,5 +1,5 @@
 [package]
-name = "app"
+name = "cf_access_auth"
 version = "0.1.0"
 edition = "2024"
 

@@ -58,7 +58,7 @@
           ];
         };
 
-        packages.default = build "default" ./.;
+        packages.default = build "cf_access_auth" ./.;
       }
     );
 }
