@@ -6,13 +6,13 @@ use std::str::FromStr;
 use actix_web::{App, HttpRequest, HttpResponse, HttpServer, get, http::header::HeaderName, web};
 use clap::Parser;
 
-use crate::validator::validate_jwt;
+use crate::validator::validate_jwt_with_cache;
 
 #[derive(Parser, Debug)]
 struct Args {
-    #[arg(short, long, default_value = "0.0.0.0")]
+    #[arg(short, long)]
     bind: String,
-    #[arg(short, long, default_value_t = 8080)]
+    #[arg(short, long)]
     port: u16,
 }
 
@@ -49,8 +49,8 @@ async fn verify(aud: web::Path<String>, req: HttpRequest) -> HttpResponse {
         return HttpResponse::Unauthorized().body("Missing Cf-Access-Jwt-Assertion header");
     };
 
-    return match validate_jwt(&aud, &jwt_assertion).await {
-        Ok(data) => HttpResponse::Ok().json(data),
+    return match validate_jwt_with_cache(&aud, &jwt_assertion).await {
+        Ok(data) => HttpResponse::Ok().body(format!("{:?}", data)),
         Err(e) => HttpResponse::Unauthorized().body(e.to_string()),
     };
 }

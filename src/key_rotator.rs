@@ -4,6 +4,8 @@ use anyhow::bail;
 use jsonwebtoken::DecodingKey;
 use tokio::sync::Mutex;
 
+use crate::validator::CLAIM_CACHE;
+
 const KEY_ROTATE_INTERVAL_SECS: u64 = 3600 * 24; // 24 hours
 const KEY_EXPIRY_SECS: u64 = 3600 * 24 * 3; // 3 days
 
@@ -46,6 +48,10 @@ async fn fetch_jwks() -> anyhow::Result<JwksData> {
         fetched_at: std::time::Instant::now(),
     };
     println!("Fetched new JWKS from {}", jwks_url);
+
+    // TODO: Consider adding a more sophisticated cache invalidation strategy
+    CLAIM_CACHE.lock().await.clear();
+
     Ok(jwks_data)
 }
 
